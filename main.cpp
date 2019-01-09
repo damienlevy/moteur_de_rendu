@@ -11,7 +11,6 @@
 
 std::vector< std::vector<float> > read(std::string name){
   std::vector< std::vector<float> > coordonne;
-  std::vector<float> point;
   std:: ifstream fichier(name.c_str());
   if(fichier){
     std:: string ligne; 
@@ -19,10 +18,13 @@ std::vector< std::vector<float> > read(std::string name){
     //Tant qu'on n'est pas à la fin, on lit
     while(fichier >> ligne) {
       while(ligne == "v"){
+	std::vector<float> point;
 	fichier >> ligne;
 	point.push_back( atof(ligne.c_str()));
+	//	std::cout << ligne <<std::endl;
 	fichier >> ligne;
 	point.push_back( atof(ligne.c_str()));
+	//	std::cout << ligne <<std::endl;
 	fichier >> ligne;
 	fichier >> ligne;
 	coordonne.push_back(point);
@@ -30,7 +32,8 @@ std::vector< std::vector<float> > read(std::string name){
      
 
 
-      std::cout << ligne <<std::endl;
+     
+      // std::cout << ligne <<std::endl;
 	  
 	  
     }
@@ -79,15 +82,23 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
 
 
 int main(int argc, char** argv) {
-  TGAImage image(100, 100, TGAImage::RGB);
+  TGAImage image(800, 800, TGAImage::RGB);
  
   std::vector< std::vector<float> > coordonne = read("african_head.obj");
+  std::vector<float> point;
+  int size = coordonne.size(); 
+  for(int i = 0 ; i < size; i++){
+    point = coordonne[i];
+    // std::cout <<point[0] << std::endl;
+   // std::cout << ligne <<std::endl;
 
-  image.set(-0.000581696,-0.734665 , red);
-  line(13, 20, 80, 40, image, white); 
+    image.set((point[0]+1)*800/2,(1+point[1])*800/2,white);
+  }
+  //image.set(-0.000581696,-0.734665 , red);
+  /*  line(13, 20, 80, 40, image, white); 
   line(20, 13, 40, 80, image, red); 
   line(80, 40, 13, 20, image, red);
-
+  */
   image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
   image.write_tga_file("output.tga");
   return 0;
