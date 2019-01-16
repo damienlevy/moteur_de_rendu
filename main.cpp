@@ -7,6 +7,25 @@
 #include "tgaimage.h"
 
 
+const TGAColor white = TGAColor(255, 255, 255, 255);
+const TGAColor red   = TGAColor(255, 0,   0,   255);
+
+
+
+std::string split_perso(std::string mot){
+  std::string tmp="";
+  
+  int i = 0;
+  while(mot[i] != '/'){
+    
+    tmp += mot[i];
+    //std::cout << tmp <<std::endl;
+    i++;
+  }
+  //std::cout << tmp <<std::endl;
+  return tmp;
+}
+
 
 void read(std::string name, 
           std::vector< std::vector<float> > &coordonne, 
@@ -32,34 +51,18 @@ void read(std::string name,
           coordonne.push_back(point);
       }
       while(ligne == "f"){
-        //fichier >> ligne;
-        //fichier.get(c);
-        //fichier.get(c);
+        
         for(int i = 0 ; i < 3 ; i++){
-          fichier.get(c); 
-         while(c!='/'){
-          std::cout << c <<std::endl;
-          fichier.get(c);
-          //std::cout << c <<std::endl;
-         }
-         //fichier.ignore();
-         //fichier >> ligne;
-         //fichier.get(c);
-          //std::cout << ligne <<std::endl;
+          fichier >> ligne;
+          std::string s = split_perso(ligne);
+          std::cout << s <<std::endl;
+         
         }
          fichier >> ligne;
-        //std::cout << ligne <<std::endl;
-/*
-        fichier >> ligne;
-        std::cout << ligne <<std::endl;
-        
-        fichier >> ligne;
-        std::cout << ligne <<std::endl;*/
+
         
       }
-     //fichier >> ligne;
-      // std::cout << ligne <<std::endl;
-	  
+  
 	  
     }
   }
@@ -67,11 +70,11 @@ void read(std::string name,
   else{
     std:: cout << "ERREUR: Impossible d'ouvrir le fichier en lecture." << std::endl;
   }
-  //return coordonne;
+
 }
 
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor red   = TGAColor(255, 0,   0,   255);
+
+
 
 void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) { 
   bool steep = false; 
