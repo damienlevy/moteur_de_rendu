@@ -8,31 +8,56 @@
 
 
 
+void read(std::string name, 
+          std::vector< std::vector<float> > &coordonne, 
+          std::vector< std::vector<int> > &point){
+  //std::vector< std::vector<float> > coordonne;
 
-std::vector< std::vector<float> > read(std::string name){
-  std::vector< std::vector<float> > coordonne;
-  std:: ifstream fichier(name.c_str());
-  if(fichier){
+    std:: ifstream fichier(name.c_str());
+    if(fichier){
     std:: string ligne; 
-     
+    char c;
     //Tant qu'on n'est pas à la fin, on lit
-    while(fichier >> ligne) {
+    while(fichier >> ligne) { //permet de lire mot a mot
       while(ligne == "v"){
-	std::vector<float> point;
-	fichier >> ligne;
-	point.push_back( atof(ligne.c_str()));
-	//	std::cout << ligne <<std::endl;
-	fichier >> ligne;
-	point.push_back( atof(ligne.c_str()));
-	//	std::cout << ligne <<std::endl;
-	fichier >> ligne;
-	fichier >> ligne;
-	coordonne.push_back(point);
+          std::vector<float> point;
+          fichier >> ligne;
+          point.push_back( atof(ligne.c_str()));
+          //	std::cout << ligne <<std::endl;
+          fichier >> ligne;
+          point.push_back( atof(ligne.c_str()));
+          //	std::cout << ligne <<std::endl;
+          fichier >> ligne;
+          fichier >> ligne;
+          coordonne.push_back(point);
       }
-     
-
-
-     
+      while(ligne == "f"){
+        //fichier >> ligne;
+        //fichier.get(c);
+        //fichier.get(c);
+        for(int i = 0 ; i < 3 ; i++){
+          fichier.get(c); 
+         while(c!='/'){
+          std::cout << c <<std::endl;
+          fichier.get(c);
+          //std::cout << c <<std::endl;
+         }
+         //fichier.ignore();
+         //fichier >> ligne;
+         //fichier.get(c);
+          //std::cout << ligne <<std::endl;
+        }
+         fichier >> ligne;
+        //std::cout << ligne <<std::endl;
+/*
+        fichier >> ligne;
+        std::cout << ligne <<std::endl;
+        
+        fichier >> ligne;
+        std::cout << ligne <<std::endl;*/
+        
+      }
+     //fichier >> ligne;
       // std::cout << ligne <<std::endl;
 	  
 	  
@@ -42,7 +67,7 @@ std::vector< std::vector<float> > read(std::string name){
   else{
     std:: cout << "ERREUR: Impossible d'ouvrir le fichier en lecture." << std::endl;
   }
-  return coordonne;
+  //return coordonne;
 }
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
@@ -83,8 +108,10 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
 
 int main(int argc, char** argv) {
   TGAImage image(800, 800, TGAImage::RGB);
- 
-  std::vector< std::vector<float> > coordonne = read("african_head.obj");
+  
+  std::vector< std::vector<float> > coordonne;
+  std::vector< std::vector<int> > pnt;
+  read("african_head.obj",coordonne,pnt);
   std::vector<float> point;
   int size = coordonne.size(); 
   for(int i = 0 ; i < size; i++){
@@ -93,12 +120,12 @@ int main(int argc, char** argv) {
    // std::cout << ligne <<std::endl;
 
     image.set((point[0]+1)*800/2,(1+point[1])*800/2,white);
-  }
+    }
   //image.set(-0.000581696,-0.734665 , red);
-  /*  line(13, 20, 80, 40, image, white); 
-  line(20, 13, 40, 80, image, red); 
-  line(80, 40, 13, 20, image, red);
-  */
+  //  line(13, 20, 80, 40, image, white); 
+  // line(20, 13, 40, 80, image, red); 
+  // line(80, 40, 13, 20, image, red);
+  
   image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
   image.write_tga_file("output.tga");
   return 0;
