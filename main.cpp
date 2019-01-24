@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <stdlib.h> 
+#include <time.h>
 #include "cmath"
 #include <cstdlib>
 #include "tgaimage.h"
@@ -9,6 +11,7 @@
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255, 0,   0,   255);
+const TGAColor green = TGAColor(0, 255, 0, 255);
 
 int const width = 800;
 int const height = 800;
@@ -105,6 +108,31 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
   } 
 } 
 
+TGAColor rand_color(){
+  TGAColor color;
+  
+  int rnd = rand() % 3;
+  //std:: cout << "rand : " << rnd << std::endl;
+
+  switch(rnd)
+  {
+    case 0:
+      color = white;
+      break;
+
+    case 1:
+      color = red;
+      break;
+
+    case 2 :
+      color = green;
+      break;
+  }
+
+  return color;
+}
+
+
 void triangle(std::vector<float> p1,
               std::vector<float> p2,
               std::vector<float> p3,
@@ -128,11 +156,12 @@ void triangle(std::vector<float> p1,
       }
     if(p2y>p3y){
       std::swap(p2,p3);  
-}
+    }
     
-    int hauteur = p3y-p1y;
+    int hauteur = p3y - p1y;
 
     for(int i = 0 ; i < hauteur ; i++){
+    
       bool second_moitier = i > p2y-p1y || p2y == p1y;
       
       int hauteur_segment;
@@ -145,26 +174,28 @@ void triangle(std::vector<float> p1,
       }
       float alpha = (float) i/hauteur;
       float beta;
+      //float beta  = (float)(i-(second_half ? t1.y-t0.y : 0))/segment_height; 
       if(second_moitier){
-        beta = (float) (i - (p2y-p1y) )/hauteur;
+        beta = (float) (i - (p2y-p1y) )/hauteur_segment;
       }else{
-        beta = (float) i/hauteur;
+        beta = (float) i/hauteur_segment;
 
       }
 
-      A = p1x + (p3x-p1x) * alpha;
+      A = p1x + ((p3x-p1x) * alpha);
       
       if(second_moitier){
         B = p2x + (p3x-p2x)*beta;
       }else{
-        B = p1x + (p2x - p1x) * beta;
+        B = p1x + ((p2x - p1x) * beta);
       }
-      if(A>B)
-        std::swap(A,B);
+      
+      if(A>B) std::swap(A,B);
+      int x = (int) A;
+      int y = (int) B;
 
-       
-      for(int j = A; j <=B ; j++){
-        //if(!second_moitier){
+      for(int j = x; j <=y ; j++){
+        //if(second_moitier){
         image.set(j,p1y+i,color);
         //}
         
@@ -183,20 +214,27 @@ void triangle(std::vector<float> p1,
 
 int main() {//int argc, char** argv
 
+  srand (time(NULL));
+
   TGAImage image(width, height, TGAImage::RGB);
   
   std::vector< std::vector<float> > coordonne;
   std::vector< std::vector<int> > pnt;
+  
+  TGAColor color = white;
+
   read("african_head.obj",coordonne,pnt);
-  std::vector<float> point; // pour recuperer les coordonne
+  //std::vector<float> point; // pour recuperer les coordonne
   std::vector<int> p; //pour recuperer les 3 point à relier
   int size_coordonne = coordonne.size(); 
   int size_pnt = pnt.size();
-  
+  std:: cout << "size_coordonne : " << size_coordonne << std::endl;
+  std:: cout << "size_pnt : " << size_pnt << std::endl;
   //dessine l'image en fils de fer
   
   for(int i = 0 ; i < size_pnt ; i++ ){
-   
+
+    color = rand_color();
     p = pnt[i];
     std::vector<float> p1;
     std::vector<float> p2;
@@ -205,8 +243,10 @@ int main() {//int argc, char** argv
     p1 = coordonne[p[0]];
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
-    triangle(p1,p2,p3,image,white);
-    /*
+    //triangle(p1,p2,p3,image,red);
+    //triangle(p2,p3,p1,image,white);
+    triangle(p3,p1,p2,image,green);
+    /*////
     for(int j=0;j<3;j++){
       point = coordonne[p[j]];
       
@@ -220,7 +260,7 @@ int main() {//int argc, char** argv
       int y1 = (point[1] + 1) * height/2;
       line(x0 , y0 , x1 , y1 , image, white);
 
-    }*/
+    }////*/
   }
 
   //dessine le nuage de points
@@ -239,11 +279,11 @@ int main() {//int argc, char** argv
   // line(80, 40, 13, 20, image, red);
 /*
   std::vector<float> p1;
-  p1.push_back(0.13);
+  p1.push_back(-0.13);
   p1.push_back(0.20);
   std::vector<float> p2;
-  p2.push_back(0.40);
-  p2.push_back(0.80);
+  p2.push_back(-0.40);
+  p2.push_back(-0.80);
   std::vector<float> p3;
   p3.push_back(0.30);
   p3.push_back(0.14);
