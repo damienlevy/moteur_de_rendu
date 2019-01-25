@@ -9,6 +9,7 @@
 #include "tgaimage.h"
 
 
+
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255, 0,   0,   255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
@@ -142,6 +143,14 @@ void triangle(std::vector<float> p1,
               TGAColor color){
 
     float A,B;
+
+
+/*
+    line((p1[0]+1)*width/2 , (p1[1]+ 1) * height/2 , (p2[0]+1)*width/2 , (p2[1]+ 1) * height/2,image,color);
+    line((p2[0]+1)*width/2 , (p2[1]+ 1) * height/2 , (p3[0]+1)*width/2 , (p3[1] + 1) * height/2, image,color);
+    line((p3[0]+1)*width/2 , (p3[1]+ 1) * height/2 , (p1[0]+1)*width/2 , (p1[1]+ 1) * height/2 ,image,color);
+*/
+
     float p1x = (p1[0]+ 1) * width/2;
     float p2x = (p2[0]+ 1) * width/2;
     float p3x = (p3[0]+ 1) * width/2;
@@ -149,20 +158,26 @@ void triangle(std::vector<float> p1,
     float p1y = (p1[1]+ 1) * height/2;
     float p2y = (p2[1]+ 1) * height/2;
     float p3y = (p3[1]+ 1) * height/2;
- 
+
+   
     if(p1y>p2y){ 
-      std::swap(p1,p2);
+      std::swap(p1y,p2y);
+      std::swap(p1x,p2x);
+
       }
     if(p1y>p3y){
-      std::swap(p1,p3);
+      std::swap(p1y,p3y);
+      std::swap(p1x,p3x);
       }
     if(p2y>p3y){
-      std::swap(p2,p3);  
+      std::swap(p2x,p3x);
+      std::swap(p2y,p3y);  
     }
     
     int hauteur = p3y - p1y;
 
     for(int i = 0 ; i < hauteur ; i++){
+    
     
       bool second_moitier = i > p2y-p1y || p2y == p1y;
       
@@ -175,8 +190,7 @@ void triangle(std::vector<float> p1,
        
       }
       float alpha = (float) i/hauteur;
-      float beta;
-      //float beta  = (float)(i-(second_half ? t1.y-t0.y : 0))/segment_height; 
+      float beta; 
       if(second_moitier){
         beta = (float) (i - (p2y-p1y) )/hauteur_segment;
       }else{
@@ -195,22 +209,15 @@ void triangle(std::vector<float> p1,
       if(A>B) std::swap(A,B);
       int x = (int) A;
       int y = (int) B;
-
+      
       for(int j = x; j <=y ; j++){
-        //if(!second_moitier){
-        image.set(j,p1y+i,color);
-        //}
-        
+       
+        image.set(j,p1y+i,color); 
 
       }
        
     }
-        
-/*
-    line((p1[0]+1)*width/2,(p1[1]+ 1) * height/2 , (p2[0]+1)*width/2 , (p2[1]+ 1) * height/2,image,color);
-    line((p2[0]+1)*width/2 , (p2[1]+ 1) * height/2 , (p3[0]+1)*width/2 , (p3[1] + 1) * height/2, image,color);
-    line((p3[0]+1)*width/2 , (p3[1]+ 1) * height/2 , (p1[0]+1)*width/2 , (p1[1]+ 1) * height/2 ,image,color);
-*/
+
 }
 
 
@@ -234,7 +241,6 @@ int main() {//int argc, char** argv
   
   for(int i = 0 ; i < size_pnt ; i++ ){
 
-    //color = rand_color();
     p = pnt[i];
     std::vector<float> p1;
     std::vector<float> p2;
@@ -243,10 +249,15 @@ int main() {//int argc, char** argv
     p1 = coordonne[p[0]];
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
+   
+   ////////////////////////////////////////
     triangle(p1,p2,p3,image,rand_color());
-    triangle(p2,p3,p1,image,rand_color());
-    triangle(p3,p1,p2,image,rand_color());
-    /*////
+    //triangle(p2,p3,p1,image,rand_color());
+    //triangle(p3,p1,p2,image,rand_color());
+
+
+
+  /*  /////
     for(int j=0;j<3;j++){
       point = coordonne[p[j]];
       
@@ -260,7 +271,7 @@ int main() {//int argc, char** argv
       int y1 = (point[1] + 1) * height/2;
       line(x0 , y0 , x1 , y1 , image, white);
 
-    }////*/
+    }/////*/
   }
 
   //dessine le nuage de points
@@ -274,20 +285,34 @@ int main() {//int argc, char** argv
 
 
   //image.set(-0.000581696,-0.734665 , red);
-  //  line(13, 20, 80, 40, image, white); 
-  // line(20, 13, 40, 80, image, red); 
-  // line(80, 40, 13, 20, image, red);
+ // line(40, 80, 80, 20, image, white); 
+ // line(20, 13, 40, 80, image, red); 
+ // line(80, 20, 20, 13, image, red);
+
+
+/*///////////////////
+  p = pnt[150];
+ std::vector<float> p1;
+    std::vector<float> p2;
+    std::vector<float> p3;
+ 
+    p1 = coordonne[p[0]];
+    p2 = coordonne[p[1]];
+    p3 = coordonne[p[2]];
+
+////////////*/
+
 /*
   std::vector<float> p1;
-  p1.push_back(-0.13);
-  p1.push_back(0.20);
+  p1.push_back(0.40);
+  p1.push_back(0.80);
   std::vector<float> p2;
-  p2.push_back(-0.40);
-  p2.push_back(-0.80);
+  p2.push_back(0.80);
+  p2.push_back(0.20);
   std::vector<float> p3;
-  p3.push_back(0.30);
-  p3.push_back(0.14);
-  triangle(p1,p2,p3,image,white);
+  p3.push_back(0.20);
+  p3.push_back(0.13);
+  triangle(p1,p2,p3,image,rand_color());
 */
   image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
   image.write_tga_file("output.tga");
