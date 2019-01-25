@@ -115,22 +115,6 @@ TGAColor rand_color(){
   int rnd1 = rand() % 256;
   int rn2  = rand() % 256;
   int rnd3 = rand() % 256;
-  //std:: cout << "rand : " << rnd << std::endl;
-/*
-  switch(rnd)
-  {
-    case 0:
-      color = white;
-      break;
-
-    case 1:
-      color = red;
-      break;
-
-    case 2 :
-      color = green;
-      break;
-  }*/
   color = TGAColor(rnd1, rn2, rnd3, 255);
   return color;
 }
@@ -143,13 +127,6 @@ void triangle(std::vector<float> p1,
               TGAColor color){
 
     float A,B;
-
-
-/*
-    line((p1[0]+1)*width/2 , (p1[1]+ 1) * height/2 , (p2[0]+1)*width/2 , (p2[1]+ 1) * height/2,image,color);
-    line((p2[0]+1)*width/2 , (p2[1]+ 1) * height/2 , (p3[0]+1)*width/2 , (p3[1] + 1) * height/2, image,color);
-    line((p3[0]+1)*width/2 , (p3[1]+ 1) * height/2 , (p1[0]+1)*width/2 , (p1[1]+ 1) * height/2 ,image,color);
-*/
 
     float p1x = (p1[0]+ 1) * width/2;
     float p2x = (p2[0]+ 1) * width/2;
@@ -223,7 +200,7 @@ void triangle(std::vector<float> p1,
 
 int main() {//int argc, char** argv
 
-  srand (time(NULL));
+  srand (time(NULL)); //pour le random
 
   TGAImage image(width, height, TGAImage::RGB);
   
@@ -231,14 +208,10 @@ int main() {//int argc, char** argv
   std::vector< std::vector<int> > pnt;
   
   read("african_head.obj",coordonne,pnt);
-  //std::vector<float> point; // pour recuperer les coordonne
   std::vector<int> p; //pour recuperer les 3 point à relier
-  int size_coordonne = coordonne.size(); 
   int size_pnt = pnt.size();
-  std:: cout << "size_coordonne : " << size_coordonne << std::endl;
-  std:: cout << "size_pnt : " << size_pnt << std::endl;
-  //dessine l'image en fils de fer
-  
+
+  //boucle de dessin des triangles
   for(int i = 0 ; i < size_pnt ; i++ ){
 
     p = pnt[i];
@@ -250,57 +223,11 @@ int main() {//int argc, char** argv
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
    
-   ////////////////////////////////////////
+   
     triangle(p1,p2,p3,image,rand_color());
-    //triangle(p2,p3,p1,image,rand_color());
-    //triangle(p3,p1,p2,image,rand_color());
-
-
-
-  /*  /////
-    for(int j=0;j<3;j++){
-      point = coordonne[p[j]];
-      
-      
-      int x0 = (point[0] + 1)  * width/2;
-      int y0 = (point[1] + 1) * height/2;
-      point = coordonne[p[(j+1)%3]];
-
-      
-      int x1 = (point[0] + 1) * width/2;
-      int y1 = (point[1] + 1) * height/2;
-      line(x0 , y0 , x1 , y1 , image, white);
-
-    }/////*/
+   
   }
 
-  //dessine le nuage de points
-  /*for(int i = 0 ; i < size_coordonne; i++){
-    point = coordonne[i];
-    // std::cout <<point[0] << std::endl;
-   // std::cout << ligne <<std::endl;
-
-    image.set((point[0]+1)*800/2,(1+point[1])*800/2,white);
-    }*/
-
-
-  //image.set(-0.000581696,-0.734665 , red);
- // line(40, 80, 80, 20, image, white); 
- // line(20, 13, 40, 80, image, red); 
- // line(80, 20, 20, 13, image, red);
-
-
-/*///////////////////
-  p = pnt[150];
- std::vector<float> p1;
-    std::vector<float> p2;
-    std::vector<float> p3;
- 
-    p1 = coordonne[p[0]];
-    p2 = coordonne[p[1]];
-    p3 = coordonne[p[2]];
-
-////////////*/
 
 /*
   std::vector<float> p1;
@@ -314,7 +241,7 @@ int main() {//int argc, char** argv
   p3.push_back(0.13);
   triangle(p1,p2,p3,image,rand_color());
 */
-  image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
+  image.flip_vertically(); 
   image.write_tga_file("output.tga");
   return 0;
 }
