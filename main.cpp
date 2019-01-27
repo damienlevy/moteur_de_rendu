@@ -19,15 +19,12 @@ int const height = 800;
 
 std::string split_perso(std::string mot){
   std::string tmp="";
-  
   int i = 0;
   while(mot[i] != '/'){
     
     tmp += mot[i];
-    //std::cout << tmp <<std::endl;
     i++;
   }
-  //std::cout << tmp <<std::endl;
   return tmp;
 }
 
