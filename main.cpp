@@ -7,6 +7,7 @@
 #include "cmath"
 #include <cstdlib>
 #include "tgaimage.h"
+#include "point.h"
 
 
 
@@ -72,9 +73,6 @@ void read(std::string name,
   }
 
 }
-
-
-
 
 void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) { 
   bool steep = false; 
@@ -197,6 +195,17 @@ void triangle(std::vector<float> p1,
 
 int main() {//int argc, char** argv
 
+
+/////////test////////
+  Point2DF p2di(0.1,1.5);
+  Point2DF p4di(0.1,1.5);
+  if(p2di == p4di){
+    Point2DF pp = p2di+p4di;
+    std::cout<< pp.getX() <<std::endl;
+  }
+
+
+////////////////
   srand (time(NULL)); //pour le random
 
   TGAImage image(width, height, TGAImage::RGB);
