@@ -10,7 +10,6 @@
 #include "point.h"
 
 
-
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255, 0,   0,   255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
@@ -197,12 +196,14 @@ int main() {//int argc, char** argv
 
 
 /////////test////////
-  Point2DF p2di(0.1,1.5);
-  Point2DF p4di(0.1,1.5);
+  Point3DF p2di(0.1,1.,1.);
+  Point3DF p4di(0.1,1.,1.);
+ 
   if(p2di == p4di){
-    Point2DF pp = p2di+p4di;
-    std::cout<< pp.getX() <<std::endl;
+    Point3DF pp = p2di-p4di;
+    std::cout<< pp <<std::endl;
   }
+
 
 
 ////////////////
