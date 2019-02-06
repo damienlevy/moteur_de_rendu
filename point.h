@@ -10,6 +10,9 @@ template <typename T> class Point2D {
         void afficher(std::ostream &flux)const{
             flux << x  <<" , "<< y;
         }
+        T crossProduct(Point2D<T> p ){
+            return x*p.y-y*p.x;
+        }
     private :
         T x,y;
 
@@ -64,6 +67,7 @@ template <typename T> class Point3D{
         void afficher(std::ostream &flux)const{
             flux << x  <<" , "<< y << " , "<< z;
         }
+
         
     private :
         T x,y,z;
