@@ -49,6 +49,7 @@ Point2D<T> operator*(Point2D<T> p ,float f) {
 */
 template <typename T> class Point3D{
     public :
+        Point3D() : x(0),y(0),z(0){}
         Point3D(T xx , T yy, T zz) : x(xx),y(yy),z(zz){}
         T getX() const{return x;}
         T getY() const{return y;}

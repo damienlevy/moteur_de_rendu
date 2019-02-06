@@ -41,6 +41,7 @@ void read(std::string name,
     while(fichier >> ligne) { //permet de lire mot a mot
       while(ligne == "v"){
           std::vector<float> point;
+          
           fichier >> ligne;
           point.push_back( atof(ligne.c_str()));
           //	std::cout << ligne <<std::endl;
@@ -48,6 +49,7 @@ void read(std::string name,
           point.push_back( atof(ligne.c_str()));
           //	std::cout << ligne <<std::endl;
           fichier >> ligne;
+          point.push_back( atof(ligne.c_str()));
           fichier >> ligne;
           coordonne.push_back(point);
       }
@@ -271,33 +273,47 @@ int main() {//int argc, char** argv
 
   TGAImage image(width, height, TGAImage::RGB);
   Point3DF lumiere(0,0,-1);
+  float intensite(0);
   
   std::vector< std::vector<float> > coordonne;
   std::vector< std::vector<int> > pnt;
   
-  read("african_head.obj",coordonne,pnt);
+  read("african_head.obj",coordonne,pnt); //v , f
   std::vector<int> p; //pour recuperer les 3 point à relier
   int size_pnt = pnt.size();
 /*  Point2DF point1;
   Point2DF point2;
   Point2DF point3;*/
   //boucle de dessin des triangles
+  Point3DF world_coords[3];
+  Point3DF n;
+
   for(int i = 0 ; i < size_pnt ; i++ ){
 
-    p = pnt[i];
+    p = pnt[i]; //pnt : f 
     std::vector<float> p1;
     std::vector<float> p2;
     std::vector<float> p3;
  
-    p1 = coordonne[p[0]];
+    p1 = coordonne[p[0]]; //coordonne : v
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
+
+    world_coords[0] = Point3DF(p1[0],p1[1],p1[2]);
+    world_coords[1] = Point3DF(p2[0],p2[1],p2[2]);
+    world_coords[2] = Point3DF(p3[0],p3[1],p3[2]);;
 
     Point2DF point1((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2);
     Point2DF point2((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2);
     Point2DF point3((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2);
-   
-    triangle(point1,point2,point3,image,rand_color());
+
+    n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
+    n.normalize();
+    intensite = n*lumiere;
+    if(intensite>0){
+      triangle(point1,point2,point3,image,TGAColor(intensite*255,intensite*255,intensite*255));
+    }
+    
    
   }
 
