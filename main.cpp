@@ -114,6 +114,65 @@ TGAColor rand_color(){
 }
 
 
+
+void triangle(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
+  float A,B;
+  if(p1.getY()>p2.getY()){ 
+    std::swap(p1,p2);
+    //std::swap(p1x,p2x);
+
+  }
+  if(p1.getY()>p3.getY()){
+    std::swap(p1,p3);
+    
+  }
+  if(p2.getY()>p3.getY()){
+    std::swap(p2,p3);  
+  }
+  int hauteur = p3.getY() - p1.getY();
+
+  for(int i = 0 ; i < hauteur ; i++){
+    
+    bool second_moitier = i > p2.getY()-p1.getY() || p2.getY()== p1.getY();
+    int hauteur_segment;
+    if(second_moitier){
+      hauteur_segment = p3.getY()-p2.getY();
+        
+    }else{
+      hauteur_segment = p2.getY()-p1.getY();
+       
+    }
+    float alpha = (float) i/hauteur;
+    float beta; 
+    if(second_moitier){
+      beta = (float) (i - (p2.getY()-p1.getY()) )/hauteur_segment;
+    }else{
+      beta = (float) i/hauteur_segment;
+
+    }
+
+      A = p1.getX() + ((p3.getX()-p1.getX()) * alpha);
+      
+      if(second_moitier){
+        B = p2.getX() + (p3.getX()-p2.getX())*beta;
+      }else{
+        B = p1.getX() + ((p2.getX() - p1.getX()) * beta);
+      }
+      
+      if(A>B) std::swap(A,B);
+      int x = (int) A;
+      int y = (int) B;
+      
+      for(int j = x; j <=y ; j++){
+       
+        image.set(j,p1.getY()+i,color); 
+
+      }
+       
+    }
+
+}
+/*/////////
 void triangle(std::vector<float> p1,
               std::vector<float> p2,
               std::vector<float> p3,
@@ -121,8 +180,7 @@ void triangle(std::vector<float> p1,
               TGAColor color){
 
     float A,B;
-
-    float p1x = (p1[0]+ 1) * width/2;
+ float p1x = (p1[0]+ 1) * width/2;
     float p2x = (p2[0]+ 1) * width/2;
     float p3x = (p3[0]+ 1) * width/2;
 
@@ -130,7 +188,9 @@ void triangle(std::vector<float> p1,
     float p2y = (p2[1]+ 1) * height/2;
     float p3y = (p3[1]+ 1) * height/2;
 
-   
+  triangle(Point2DF(p1x,p1y),Point2DF(p2x,p2y),Point2DF(p3x,p3y),image,color);
+*/
+   /*
     if(p1y>p2y){ 
       std::swap(p1y,p2y);
       std::swap(p1x,p2x);
@@ -189,27 +249,28 @@ void triangle(std::vector<float> p1,
        
     }
 
-}
+}*/
 
 
 int main() {//int argc, char** argv
 
 
-/////////test////////
-  Point3DF p2di(0.1,1.,1.);
-  Point3DF p4di(0.1,1.,1.);
+/*///////test////////
+  Point3DI a(2,5,3);
+  Point3DI b(1,1,1);
  
-  if(p2di == p4di){
-    Point3DF pp = p2di-p4di;
+
+  if(a != b){
+    //Point3DI pp(a.getY()*b.getZ()-a.getZ()*b.getY() , a.getZ()*b.getX()-a.getX()*b.getZ() , a.getX()*b.getY()-a.getY()*b.getX());
+    Point3DI pp = a^b;
     std::cout<< pp <<std::endl;
   }
 
-
-
-////////////////
+///////////////*/
   srand (time(NULL)); //pour le random
 
   TGAImage image(width, height, TGAImage::RGB);
+  Point3DF lumiere(0,0,-1);
   
   std::vector< std::vector<float> > coordonne;
   std::vector< std::vector<int> > pnt;
@@ -217,7 +278,9 @@ int main() {//int argc, char** argv
   read("african_head.obj",coordonne,pnt);
   std::vector<int> p; //pour recuperer les 3 point à relier
   int size_pnt = pnt.size();
-
+/*  Point2DF point1;
+  Point2DF point2;
+  Point2DF point3;*/
   //boucle de dessin des triangles
   for(int i = 0 ; i < size_pnt ; i++ ){
 
@@ -229,9 +292,12 @@ int main() {//int argc, char** argv
     p1 = coordonne[p[0]];
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
+
+    Point2DF point1((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2);
+    Point2DF point2((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2);
+    Point2DF point3((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2);
    
-   
-    triangle(p1,p2,p3,image,rand_color());
+    triangle(point1,point2,point3,image,rand_color());
    
   }
 

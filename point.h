@@ -43,7 +43,6 @@ Point2D<T> operator*(Point2D<T> p ,float f) {
 }
 
 
-
 /*
 *Point3D
 *
@@ -64,6 +63,7 @@ template <typename T> class Point3D{
         void afficher(std::ostream &flux)const{
             flux << x  <<" , "<< y << " , "<< z;
         }
+        
     private :
         T x,y,z;
 
@@ -100,7 +100,11 @@ template <typename T> T operator*(const Point3D<T> a,const Point3D<T> b){
     return a.getX()*b.getX() + a.getY()*b.getY() + a.getZ()*b.getZ();
 }
 
-
+//template <typename T> operator^(const Point3D<T> a , const Point3D<T> b){
+template <typename T> Point3D<T> operator ^(const Point3D<T> a,const Point3D<T> b){
+    Point3D<T> pp(a.getY()*b.getZ()-a.getZ()*b.getY() , a.getZ()*b.getX()-a.getX()*b.getZ() , a.getX()*b.getY()-a.getY()*b.getX());
+    return pp;
+}
 
 typedef Point2D<int> Point2DI;
 typedef Point2D<float> Point2DF;
