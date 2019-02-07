@@ -58,9 +58,7 @@ void read(std::string name,
         for(int i = 0 ; i < 3 ; i++){
           fichier >> ligne;
           std::string s = split_perso(ligne);
-          coord.push_back(atof(s.c_str())-1);
-          //std::cout << s <<std::endl;
-         
+          coord.push_back(atof(s.c_str())-1);  
         }
         pnt.push_back(coord);
         fichier >> ligne;
@@ -68,7 +66,6 @@ void read(std::string name,
       }
     }
   }
-
   else{
     std:: cout << "ERREUR: Impossible d'ouvrir le fichier en lecture." << std::endl;
   }
@@ -115,6 +112,33 @@ TGAColor rand_color(){
   return color;
 }
 
+Point3DF barycentre(Point2DF p1,Point2DF p2,Point2DF p3,Point2DF p){
+  Point3DF temp1(p3.getX()-p1.getX(),p2.getX()-p1.getX(),p1.getX()-p.getX());
+  Point3DF temp2(p3.getY()-p1.getY(),p2.getY()-p1.getY(),p1.getY()-p.getY());
+
+  Point3DF bary = temp1.cross(temp2);
+  if(std::abs(bary.getZ()<1)){
+    return Point3DF(-1,1,1); 
+  }
+  return Point3DF(1.f -(bary.getX()+bary.getY())/bary.getZ(),
+                  bary.getY()/bary.getZ(),
+                  bary.getX()/bary.getZ());
+
+
+}
+
+void triangle(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
+  Point2DF boxmin(image.get_width()-1 , image.get_height()-1);
+  Point2DF boxmax(0,0);
+  Point2DF clamp(image.get_width()-1 , image.get_height()-1);
+  for(int i = 0 ; i < 3 ; i++){
+    for(int j = 0 ; j < 2 ; j++){
+      
+    }
+  }
+}
+
+/*
 void triangle(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
   int max_X = std::max(p1.getX(),std::max(p2.getX(),p3.getX()));
   int max_Y = std::max(p1.getY(),std::max(p2.getY(),p3.getY()));
@@ -134,10 +158,8 @@ void triangle(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor colo
       }
     }
   }
-
-
 }
-
+*/
 void triangle2(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
   float A,B;
   if(p1.getY()>p2.getY()){ 

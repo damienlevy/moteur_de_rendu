@@ -64,33 +64,9 @@ template <typename T> class Point3D{
             *this = (*this)*(l/norm());
             return *this;
         }
-        void afficher(std::ostream &flux)const{
-            flux << x  <<" , "<< y << " , "<< z;
-        }
-
-        
-    private :
-        T x,y,z;
-
-};
-
-/*redefinition des operande*/
-template <typename T>
-bool operator==(Point3D<T> const& a, Point3D<T> const& b) {
-    return a.getX() == b.getX() && a.getY() == b.getY() && a.getZ()==b.getZ();
-}
-template <typename T>
-bool operator!=(Point3D<T> const& a, Point3D<T> const& b) {return !(a==b);}
-template <typename T>
-Point3D<T> operator+(Point3D<T> const& a, Point3D<T> const& b) {
-    Point3D<T> result(a.getX()+b.getX(),a.getY()+b.getY(),a.getZ()+b.getZ());
-    return result;
-}
-template <typename T>
-Point3D<T> operator-(Point3D<T> const& a, Point3D<T> const& b){
-    Point3D<T> result(a.getX()-b.getX(),a.getY()-b.getY(),a.getZ()-b.getZ());
-    return result;
-}
+        Point3D<T> cross(Point3D<T> p){
+            return Point3D<T>(y*p.z-z*p.y , z*p.x - x *p.z , x*p.y - y*p.x);
+        } 
 template <typename T>
 std::ostream &operator<<(std::ostream &flux, Point3D<T> const& point){
     point.afficher(flux);
