@@ -112,34 +112,63 @@ TGAColor rand_color(){
   return color;
 }
 
-Point3DF barycentre(Point2DF p1,Point2DF p2,Point2DF p3,Point2DF p){
+Point3DF barycentre(Point3DF p1,Point3DF p2,Point3DF p3,Point3DF p){
   Point3DF temp1(p3.getX()-p1.getX(),p2.getX()-p1.getX(),p1.getX()-p.getX());
   Point3DF temp2(p3.getY()-p1.getY(),p2.getY()-p1.getY(),p1.getY()-p.getY());
 
-  Point3DF bary = temp1.cross(temp2);
-  if(std::abs(bary.getZ()<1)){
-    return Point3DF(-1,1,1); 
-  }
-  return Point3DF(1.f -(bary.getX()+bary.getY())/bary.getZ(),
+  Point3DF bary = temp1^(temp2);
+  float comp = std::abs(bary.getZ());
+  if(comp>1e-2){
+    
+   return Point3DF(1.f-(bary.getX()+bary.getY())/bary.getZ(),
                   bary.getY()/bary.getZ(),
                   bary.getX()/bary.getZ());
-
-
+     
+  }
+  return Point3DF(-1,1,1);
 }
 
-void triangle(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
-  Point2DF boxmin(image.get_width()-1 , image.get_height()-1);
-  Point2DF boxmax(0,0);
+void triangle(Point3DF *p,TGAImage &image, TGAColor color){
+  float *zbuffer = new float[width*height];
   Point2DF clamp(image.get_width()-1 , image.get_height()-1);
+  float xMin(image.get_width()-1);
+  float yMin(image.get_height()-1);
+  float xMax(0),yMax(0);
   for(int i = 0 ; i < 3 ; i++){
-    for(int j = 0 ; j < 2 ; j++){
+    float tmp1 = p[i].getX();
+    float tmp2 = p[i].getY();
+    tmp1 = std::min( xMin, tmp1);
+    xMin = std::max(0.f ,tmp1);
+
+    yMin = std::max(0.f,std::min(yMin,tmp2));
+    xMax = std::min(clamp.getX(),std::max(xMax,tmp1));
+    yMax = std::min(clamp.getX(),std::max(yMax,tmp2));
+    
+  }
+
+  Point3DF temp;
+  float z(0);
+  for(int i=xMin; i<= xMax ; i++){
+    for(int j = yMin ; j <= yMax ; j++){
+      temp = Point3DF(i,j,z);
+      Point3DF bary = barycentre(p[0],p[1],p[2],temp);
+      if(bary.getX()<0 || bary.getY() <0 || bary.getZ()<0) continue;
+      
+      z = p[0].getZ()*bary.getX()+p[1].getZ()*bary.getY()+p[2].getZ()*bary.getZ();
+      if(zbuffer[int(i+j*width)] < z){
+        //std::cout<<"coucou"<<std::endl;
+        zbuffer[int(i+j*width)] = z;
+        image.set(i,j,color);
+
+      }
       
     }
   }
 }
 
-/*
-void triangle(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
+
+void triangle(Point3DF p1,Point3DF p2,Point3DF p3,TGAImage &image, TGAColor color){
+  float *zbuffer = new float[width*height];
   int max_X = std::max(p1.getX(),std::max(p2.getX(),p3.getX()));
   int max_Y = std::max(p1.getY(),std::max(p2.getY(),p3.getY()));
   int min_X = std::min(p1.getX(),std::min(p2.getX(),p3.getX()));
@@ -147,24 +176,31 @@ void triangle(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor colo
   Point2DF vector1(p2.getX()-p1.getX(),p2.getY()-p1.getY());
   Point2DF vector2(p3.getX()-p1.getX(),p3.getY()-p1.getY());
   float s,t;
+  Point3DF temp;
+  float z(0);
   for(int x = min_X ; x <= max_X ; x++){
     for(int y = min_Y; y<= max_Y ;y++){
+      temp = Point3DF(x,y,z);
+      Point3DF bary = barycentre(p1,p2,p3,temp);
       Point2DF q(x-p1.getX(),y-p1.getY());
       s = q.crossProduct(vector2) / vector1.crossProduct(vector2);
       t = vector1.crossProduct(q) / vector1.crossProduct(vector2);
 
       if((s >= 0) && (t >= 0) && (s + t <= 1)){
+        z = 0;
+
         image.set(x,y,color);
       }
+
     }
   }
 }
-*/
+
 void triangle2(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
   float A,B;
   if(p1.getY()>p2.getY()){ 
     std::swap(p1,p2);
-    //std::swap(p1x,p2x);
+
 
   }
   if(p1.getY()>p3.getY()){
@@ -261,9 +297,9 @@ int main() {//int argc, char** argv
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
 
-    world_coords[0] = Point3DF(p1[0],p1[1],p1[2]);
-    world_coords[1] = Point3DF(p2[0],p2[1],p2[2]);
-    world_coords[2] = Point3DF(p3[0],p3[1],p3[2]);
+    world_coords[0] = Point3DF((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2,p1[2]);
+    world_coords[1] = Point3DF((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2,p2[2]);
+    world_coords[2] = Point3DF((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2,p3[2]);
 
     Point2DF point1((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2);
     Point2DF point2((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2);
@@ -272,8 +308,16 @@ int main() {//int argc, char** argv
     n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
     n.normalize();
     intensite = n*lumiere;
+
     if(intensite>0){
-      triangle(point1,point2,point3,image,TGAColor(intensite*255,intensite*255,intensite*255));
+      Point3DF pp[3];
+      for(int i = 0 ; i < 3 ;i++){
+        pp[i] = world_coords[i];
+      }
+      
+      triangle(world_coords[0],world_coords[1],world_coords[2],image,TGAColor(intensite*255,intensite*255,intensite*255,255));
+      //triangle(point1,point2,point3,image,TGAColor(intensite*255,intensite*255,intensite*255,255));
+      //triangle(pp,image,TGAColor(intensite*255,intensite*255,intensite*255,255));
     }
     
    
