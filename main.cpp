@@ -27,16 +27,37 @@ std::string split_perso(std::string mot){
   }
   return tmp;
 }
+std::string split_perso2(std::string mot){
+  std::string tmp="";
+  int i = 0;
+  while(mot[i] != '/'){
+    
+    //tmp += mot[i];
+    i++;
+    
+  }
+  i++;
+  while(mot[i]!='/'){
+    
+    tmp+=mot[i];
+    i++;
+  }
+  return tmp;
+}
 
 
 void read(std::string name, 
           std::vector< std::vector<float> > &coordonne, 
-          std::vector< std::vector<int> > &pnt){
+          std::vector< std::vector<int> > &pnt,
+          std::vector<Point3DF> &coordTexture,
+          std::vector<Point3DI> &pointTexture){
   //std::vector< std::vector<float> > coordonne;
-
+  int compt = 0;
     std:: ifstream fichier(name.c_str());
     if(fichier){
     std:: string ligne;
+    float tab[3];
+
     //Tant qu'on n'est pas à la fin, on lit
     while(fichier >> ligne) { //permet de lire mot a mot
       while(ligne == "v"){
@@ -53,18 +74,36 @@ void read(std::string name,
           fichier >> ligne;
           coordonne.push_back(point);
       }
+      while(ligne == "vt"){
+        compt++;
+        
+        for(int i = 0 ; i<3;i++){
+          fichier >> ligne;
+          tab[i] = atof(ligne.c_str());
+          //std::cout << tab[i] <<std::endl;
+        }
+        coordTexture.push_back(Point3DF(tab[0],tab[1],tab[2]));
+        fichier >> ligne;
+      }
+     
       while(ligne == "f"){
         std::vector<int> coord; 
         for(int i = 0 ; i < 3 ; i++){
           fichier >> ligne;
           std::string s = split_perso(ligne);
+         
           coord.push_back(atof(s.c_str())-1);  
+          tab[i] = atof(split_perso2(ligne).c_str())-1;
+          
         }
+        pointTexture.push_back(Point3DI(tab[0],tab[1],tab[2]));
+        
         pnt.push_back(coord);
         fichier >> ligne;
 
       }
     }
+     
   }
   else{
     std:: cout << "ERREUR: Impossible d'ouvrir le fichier en lecture." << std::endl;
@@ -131,7 +170,7 @@ Point3DF barycentre(Point3DF p1,Point3DF p2,Point3DF p3,Point3DF p){
 
 
 
-void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAColor color){
+void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float intensite,Point3DF *pointText){
 
   int max_X = std::max(p1.getX(),std::max(p2.getX(),p3.getX()));
   int max_Y = std::max(p1.getY(),std::max(p2.getY(),p3.getY()));
@@ -140,6 +179,7 @@ void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image
   
   Point3DF temp;
   float z(0);
+  float textX(0) , textY(0);
   for(float x = min_X ; x <= max_X ; x++){
     for(float y = min_Y; y<= max_Y ;y++){
       temp = Point3DF(x,y,z);
@@ -149,122 +189,40 @@ void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image
       z = (p1.getZ()*bary.getX())+(p2.getZ()*bary.getY())+(p3.getZ()*bary.getZ());
       if(zbuffer[int(x+y*width)] < z ){
         zbuffer[int(x+y*width)] = z ;
-        image.set(x,y,color);
+        textX = pointText[0].getX()*bary.getX() + pointText[1].getX()*bary.getY() + pointText[2].getX()*bary.getZ();
+        textY = pointText[0].getY()*bary.getX() + pointText[1].getY()*bary.getY() + pointText[2].getY()*bary.getZ();
 
-      }
-    }
-  }
-}
-void triangle(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
-  
-  int max_X = std::max(p1.getX(),std::max(p2.getX(),p3.getX()));
-  int max_Y = std::max(p1.getY(),std::max(p2.getY(),p3.getY()));
-  int min_X = std::min(p1.getX(),std::min(p2.getX(),p3.getX()));
-  int min_Y = std::min(p1.getY(),std::min(p2.getY(),p3.getY()));
-  Point2DF vector1(p2.getX()-p1.getX(),p2.getY()-p1.getY());
-  Point2DF vector2(p3.getX()-p1.getX(),p3.getY()-p1.getY());
-  float s,t;
-
-  for(int x = min_X ; x <= max_X ; x++){
-    for(int y = min_Y; y<= max_Y ;y++){
-      Point2DF q(x-p1.getX(),y-p1.getY());
-      s = q.crossProduct(vector2) / vector1.crossProduct(vector2);
-      t = vector1.crossProduct(q) / vector1.crossProduct(vector2);
-
-      if((s >= 0) && (t >= 0) && (s + t <= 1)){
-        image.set(x,y,color);
-      }
-
-    }
-  }
-}
-
-void triangle2(Point2DF p1,Point2DF p2,Point2DF p3,TGAImage &image, TGAColor color){
-  float A,B;
-  if(p1.getY()>p2.getY()){ 
-    std::swap(p1,p2);
-
-
-  }
-  if(p1.getY()>p3.getY()){
-    std::swap(p1,p3);
-    
-  }
-  if(p2.getY()>p3.getY()){
-    std::swap(p2,p3);  
-  }
-  int hauteur = p3.getY() - p1.getY();
-
-  for(int i = 0 ; i < hauteur ; i++){
-    
-    bool second_moitier = i > p2.getY()-p1.getY() || p2.getY()== p1.getY();
-    int hauteur_segment;
-    if(second_moitier){
-      hauteur_segment = p3.getY()-p2.getY();
+        TGAColor color = texture.get(textX * texture.get_width() , textY * texture.get_height());
+        image.set(x,y,color*intensite);
         
-    }else{
-      hauteur_segment = p2.getY()-p1.getY();
-       
-    }
-    float alpha = (float) i/hauteur;
-    float beta; 
-    if(second_moitier){
-      beta = (float) (i - (p2.getY()-p1.getY()) )/hauteur_segment;
-    }else{
-      beta = (float) i/hauteur_segment;
-
-    }
-
-      A = p1.getX() + ((p3.getX()-p1.getX()) * alpha);
-      
-      if(second_moitier){
-        B = p2.getX() + (p3.getX()-p2.getX())*beta;
-      }else{
-        B = p1.getX() + ((p2.getX() - p1.getX()) * beta);
-      }
-      
-      if(A>B) std::swap(A,B);
-      int x = (int) A;
-      int y = (int) B;
-      
-      for(int j = x; j <=y ; j++){
-       
-        image.set(j,p1.getY()+i,color); 
 
       }
-       
     }
-
+  }
 }
+
 
 int main() {//int argc, char** argv
 
-
-/*///////test////////
-  Point3DI a(2,5,3);
-  Point3DI b(1,1,1);
- 
-
-  if(a != b){
-    //Point3DI pp(a.getY()*b.getZ()-a.getZ()*b.getY() , a.getZ()*b.getX()-a.getX()*b.getZ() , a.getX()*b.getY()-a.getY()*b.getX());
-    Point3DI pp = a^b;
-    std::cout<< pp <<std::endl;
-  }
-
-///////////////*/
   srand (time(NULL)); //pour le random
 
   TGAImage image(width, height, TGAImage::RGB);
+  TGAImage texture;
+  texture.read_tga_file("african_head_diffuse.tga");
+  texture.flip_vertically();
   Point3DF lumiere(0,0,-1);
   float intensite(0);
   float *zbuffer = new float[width*height];
-
+  Point3DF pointText[3];
+  Point3DI temp;
   for (int i=width*height; i--; zbuffer[i] = -1);
   
   std::vector< std::vector<float> > coordonne;
   std::vector< std::vector<int> > pnt;
+  std::vector<Point3DF>coordText;
+  std::vector<Point3DI> pointTexture;
   
-  read("african_head.obj",coordonne,pnt); //v , f
+  read("african_head.obj",coordonne,pnt,coordText,pointTexture); //v , f , vt ,f/ /
   std::vector<int> p; //pour recuperer les 3 point à relier
   int size_pnt = pnt.size();
 
@@ -273,7 +231,11 @@ int main() {//int argc, char** argv
   Point3DF n;
 
   for(int i = 0 ; i < size_pnt ; i++ ){
-
+    temp = pointTexture[i];
+    //std::cout<< temp<< std::endl;
+    pointText[0] = coordText[temp.getX()];
+    pointText[1] = coordText[temp.getY()];
+    pointText[2] = coordText[temp.getZ()];
     p = pnt[i]; //pnt : f 
     std::vector<float> p1;
     std::vector<float> p2;
@@ -283,7 +245,7 @@ int main() {//int argc, char** argv
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
 
-      world_coords[0] = Point3DF(p1[0],p1[1],p1[2]);
+    world_coords[0] = Point3DF(p1[0],p1[1],p1[2]);
     world_coords[1] = Point3DF(p2[0],p2[1],p2[2]);
     world_coords[2] = Point3DF(p3[0],p3[1],p3[2]);
 
@@ -294,38 +256,26 @@ int main() {//int argc, char** argv
     n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
     n.normalize();
     intensite = n*lumiere;
-     world_coords[0] = Point3DF((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2,p1[2]);
+    world_coords[0] = Point3DF((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2,p1[2]);
     world_coords[1] = Point3DF((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2,p2[2]);
     world_coords[2] = Point3DF((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2,p3[2]);
 
+
     if(intensite>0){
-      Point3DF pp[3];
+      /*Point3DF pp[3];
       for(int i = 0 ; i < 3 ;i++){
         pp[i] = world_coords[i];
-      }
-      
-      triangle(world_coords[0],world_coords[1],world_coords[2],zbuffer,image,TGAColor(intensite*255,intensite*255,intensite*255,255));
-      //triangle(world_coords[0],world_coords[1],world_coords[2],image,rand_color());
-      //triangle(point1,point2,point3,image,TGAColor(intensite*255,intensite*255,intensite*255,255));
-      //triangle(pp,image,TGAColor(intensite*255,intensite*255,intensite*255,255));
+      }*/
+
+      //void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float intensite,Point3DF *pointText)
+      //std::cout<< pointText[0]<< std::endl;
+      triangle(world_coords[0],world_coords[1],world_coords[2],zbuffer,image,texture,intensite,pointText);
     }
     
    
   }
 
 
-/*
-  std::vector<float> p1;
-  p1.push_back(0.40);
-  p1.push_back(0.80);
-  std::vector<float> p2;
-  p2.push_back(0.80);
-  p2.push_back(0.20);
-  std::vector<float> p3;
-  p3.push_back(0.20);
-  p3.push_back(0.13);
-  triangle(p1,p2,p3,image,rand_color());
-*/
   image.flip_vertically(); 
   image.write_tga_file("output.tga");
   return 0;
