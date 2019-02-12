@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include "tgaimage.h"
 #include "point.h"
-
+#include "matrix.h"
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255, 0,   0,   255);
@@ -16,6 +16,7 @@ const TGAColor green = TGAColor(0, 255, 0, 255);
 
 int const width = 800;
 int const height = 800;
+int const depth  = 255;
 
 std::string split_perso(std::string mot){
   std::string tmp="";
@@ -45,6 +46,30 @@ std::string split_perso2(std::string mot){
   return tmp;
 }
 
+Point3DF matrixToPoint(Matrix m){
+  return Point3DF(m[0][0]/m[3][0],m[1][0]/m[3][0],m[2][0]/m[3][0]);
+}
+
+Matrix pointToMatrix(Point3DF p){
+  Matrix m(4,1);
+  m[0][0] = p.getX();
+  m[1][0] = p.getY();
+  m[2][0] = p.getZ();
+  m[3][0] = 1.f;
+  return m;
+}
+
+Matrix viewport(int x, int y, int w, int h) {
+    Matrix m = Matrix::identity(4);
+    m[0][3] = x+w/2.f;
+    m[1][3] = y+h/2.f;
+    m[2][3] = depth/2.f;
+
+    m[0][0] = w/2.f;
+    m[1][1] = h/2.f;
+    m[2][2] = depth/2.f;
+    return m;
+}
 
 void read(std::string name, 
           std::vector< std::vector<float> > &coordonne, 
@@ -194,6 +219,8 @@ void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image
 
         TGAColor color = texture.get(textX * texture.get_width() , textY * texture.get_height());
         image.set(x,y,color*intensite);
+        //image.set(x,y,white*intensite);
+
         
 
       }
@@ -211,6 +238,7 @@ int main() {//int argc, char** argv
   texture.read_tga_file("african_head_diffuse.tga");
   texture.flip_vertically();
   Point3DF lumiere(0,0,-1);
+  Point3DF camera(0,0,3);
   float intensite(0);
   float *zbuffer = new float[width*height];
   Point3DF pointText[3];
@@ -226,10 +254,13 @@ int main() {//int argc, char** argv
   std::vector<int> p; //pour recuperer les 3 point à relier
   int size_pnt = pnt.size();
 
-  //boucle de dessin des triangles
+  Matrix Projection = Matrix::identity(4);
+  Matrix ViewPort   = viewport(width/8, height/8, width*3/4, height*3/4);
+  Projection[3][2] = -1.f/camera.getZ();
   Point3DF world_coords[3];
+  Point3DF screen[3];
   Point3DF n;
-
+//boucle de dessin des triangles
   for(int i = 0 ; i < size_pnt ; i++ ){
     temp = pointTexture[i];
     //std::cout<< temp<< std::endl;
@@ -245,14 +276,18 @@ int main() {//int argc, char** argv
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
 
+
     world_coords[0] = Point3DF(p1[0],p1[1],p1[2]);
     world_coords[1] = Point3DF(p2[0],p2[1],p2[2]);
     world_coords[2] = Point3DF(p3[0],p3[1],p3[2]);
-
+    for(int j = 0 ; j < 3 ; j++){
+      screen[j] = matrixToPoint(ViewPort * Projection * pointToMatrix(world_coords[j]));  
+    }
+/*
     Point2DF point1((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2);
     Point2DF point2((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2);
     Point2DF point3((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2);
-
+*/
     n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
     n.normalize();
     intensite = n*lumiere;
@@ -269,7 +304,8 @@ int main() {//int argc, char** argv
 
       //void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float intensite,Point3DF *pointText)
       //std::cout<< pointText[0]<< std::endl;
-      triangle(world_coords[0],world_coords[1],world_coords[2],zbuffer,image,texture,intensite,pointText);
+      //triangle(world_coords[0],world_coords[1],world_coords[2],zbuffer,image,texture,intensite,pointText);
+      triangle(screen[0],screen[1],screen[2],zbuffer,image,texture,intensite,pointText);
     }
     
    
@@ -278,5 +314,11 @@ int main() {//int argc, char** argv
 
   image.flip_vertically(); 
   image.write_tga_file("output.tga");
+
+
+
+
+
+  delete []zbuffer;
   return 0;
 }
