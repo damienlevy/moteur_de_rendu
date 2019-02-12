@@ -70,12 +70,35 @@ Matrix viewport(int x, int y, int w, int h) {
     m[2][2] = depth/2.f;
     return m;
 }
+Matrix lookat(Point3DF eye, Point3DF center, Point3DF up) {
+    Point3DF z = (eye-center).normalize();
+    Point3DF x = (up^z).normalize();
+    Point3DF y = (z^x).normalize();
+    Matrix Minv = Matrix::identity(4);
+    Matrix Tr   = Matrix::identity(4);
+    //for (int i=0; i<3; i++) {
+        Minv[0][0] = x.getX();
+        Minv[0][1] = x.getY();
+        Minv[0][2] = x.getZ();
+        Minv[1][0] = y.getX();
+        Minv[1][1] = y.getY();
+        Minv[1][2] = y.getZ();
+        Minv[2][0] = z.getX();
+        Minv[2][1] = z.getY();
+        Minv[2][2] = z.getZ();
+        Tr[0][3] = -center.getX();
+        Tr[1][3] = -center.getY();
+        Tr[2][3] = -center.getZ();
+    //}
+    return Matrix(Minv*Tr);
+}
 
 void read(std::string name, 
           std::vector< std::vector<float> > &coordonne, 
           std::vector< std::vector<int> > &pnt,
           std::vector<Point3DF> &coordTexture,
-          std::vector<Point3DI> &pointTexture){
+          std::vector<Point3DI> &pointTexture,
+          std::vector<Point3DF> &vn){
   //std::vector< std::vector<float> > coordonne;
   int compt = 0;
     std:: ifstream fichier(name.c_str());
@@ -100,7 +123,7 @@ void read(std::string name,
           coordonne.push_back(point);
       }
       while(ligne == "vt"){
-        compt++;
+        //compt++;
         
         for(int i = 0 ; i<3;i++){
           fichier >> ligne;
@@ -110,7 +133,17 @@ void read(std::string name,
         coordTexture.push_back(Point3DF(tab[0],tab[1],tab[2]));
         fichier >> ligne;
       }
-     
+      while(ligne == "vn"){
+        compt++;
+        
+        for(int i = 0 ; i<3;i++){
+          fichier >> ligne;
+          tab[i] = atof(ligne.c_str());
+          //std::cout << tab[i] <<std::endl;
+        }
+        vn.push_back(Point3DF(tab[0],tab[1],tab[2]));
+        fichier >> ligne;
+      }
       while(ligne == "f"){
         std::vector<int> coord; 
         for(int i = 0 ; i < 3 ; i++){
@@ -218,9 +251,10 @@ void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image
         textY = pointText[0].getY()*bary.getX() + pointText[1].getY()*bary.getY() + pointText[2].getY()*bary.getZ();
 
         TGAColor color = texture.get(textX * texture.get_width() , textY * texture.get_height());
+        //TGAColor color(255*intensit[0],255*intensit[1],255*intensit[2]);
         image.set(x,y,color*intensite);
         //image.set(x,y,white*intensite);
-
+//image.set(x,y,color);
         
 
       }
@@ -239,6 +273,9 @@ int main() {//int argc, char** argv
   texture.flip_vertically();
   Point3DF lumiere(0,0,-1);
   Point3DF camera(0,0,3);
+  Point3DF eye(3,0,3);
+  Point3DF center(0,0,0);
+  //float intensit[3];
   float intensite(0);
   float *zbuffer = new float[width*height];
   Point3DF pointText[3];
@@ -249,16 +286,21 @@ int main() {//int argc, char** argv
   std::vector< std::vector<int> > pnt;
   std::vector<Point3DF>coordText;
   std::vector<Point3DI> pointTexture;
+  std::vector<Point3DF> vn;
+  read("african_head.obj",coordonne,pnt,coordText,pointTexture , vn); //v , f , vt ,f/ / , vn
   
-  read("african_head.obj",coordonne,pnt,coordText,pointTexture); //v , f , vt ,f/ /
   std::vector<int> p; //pour recuperer les 3 point à relier
   int size_pnt = pnt.size();
 
+  Matrix vue = lookat(eye,center,Point3DF(0,1,0));
   Matrix Projection = Matrix::identity(4);
   Matrix ViewPort   = viewport(width/8, height/8, width*3/4, height*3/4);
-  Projection[3][2] = -1.f/camera.getZ();
+  Projection[3][2] = -1.f/(eye-center).norm();//camera.getZ();
+  Matrix z = (ViewPort*Projection*vue);
+
   Point3DF world_coords[3];
   Point3DF screen[3];
+  Point3DF norm;
   Point3DF n;
 //boucle de dessin des triangles
   for(int i = 0 ; i < size_pnt ; i++ ){
@@ -271,40 +313,37 @@ int main() {//int argc, char** argv
     std::vector<float> p1;
     std::vector<float> p2;
     std::vector<float> p3;
- 
+
     p1 = coordonne[p[0]]; //coordonne : v
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
 
-
+    //norm = vn[];
+    //std::cout<<norm<<std::endl;
+    /*
+    intensit[0] = lumiere * norm.getX(); 
+    intensit[1] = lumiere * norm.getY();
+    intensit[2] = lumiere * norm.getZ();
+*/
     world_coords[0] = Point3DF(p1[0],p1[1],p1[2]);
     world_coords[1] = Point3DF(p2[0],p2[1],p2[2]);
     world_coords[2] = Point3DF(p3[0],p3[1],p3[2]);
     for(int j = 0 ; j < 3 ; j++){
-      screen[j] = matrixToPoint(ViewPort * Projection * pointToMatrix(world_coords[j]));  
+      screen[j] = matrixToPoint(ViewPort * Projection * vue * pointToMatrix(world_coords[j]));
+      //screen[j] = matrixToPoint(ViewPort * Projection * pointToMatrix(intensit[j]));  
     }
-/*
-    Point2DF point1((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2);
-    Point2DF point2((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2);
-    Point2DF point3((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2);
-*/
+
     n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
     n.normalize();
     intensite = n*lumiere;
+
     world_coords[0] = Point3DF((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2,p1[2]);
     world_coords[1] = Point3DF((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2,p2[2]);
     world_coords[2] = Point3DF((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2,p3[2]);
 
 
     if(intensite>0){
-      /*Point3DF pp[3];
-      for(int i = 0 ; i < 3 ;i++){
-        pp[i] = world_coords[i];
-      }*/
-
-      //void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float intensite,Point3DF *pointText)
-      //std::cout<< pointText[0]<< std::endl;
-      //triangle(world_coords[0],world_coords[1],world_coords[2],zbuffer,image,texture,intensite,pointText);
+    
       triangle(screen[0],screen[1],screen[2],zbuffer,image,texture,intensite,pointText);
     }
     
