@@ -272,6 +272,7 @@ int main() {//int argc, char** argv
   texture.read_tga_file("african_head_diffuse.tga");
   //texture.read_tga_file("african_head_spec.tga");
   //texture.read_tga_file("diablo3_pose_diffuse.tga");  
+  
   texture.flip_vertically();
   Point3DF lumiere(0,0,-1);
   lumiere.normalize();

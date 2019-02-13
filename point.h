@@ -104,18 +104,12 @@ Point3D<T> operator*(Point3D<T> p ,float f) {
 template <typename T,typename T2> T operator*(const Point3D<T> a,const Point3D<T2> b){
     return a.getX()*b.getX() + a.getY()*b.getY() + a.getZ()*b.getZ();
 }
-
-
 template <typename T> Point3D<T> operator ^(const Point3D<T> a,const Point3D<T> b){
     Point3D<T> pp(a.getY()*b.getZ()-a.getZ()*b.getY() , a.getZ()*b.getX()-a.getX()*b.getZ() , a.getX()*b.getY()-a.getY()*b.getX());
     return pp;
 }
-
 typedef Point2D<int> Point2DI;
 typedef Point2D<float> Point2DF;
 typedef Point3D<int> Point3DI;
 typedef Point3D<float> Point3DF;
-
-
-
 #endif
