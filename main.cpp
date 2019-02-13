@@ -296,11 +296,13 @@ int main() {//int argc, char** argv
   TGAImage image(width, height, TGAImage::RGB);
   TGAImage texture;
   texture.read_tga_file("african_head_diffuse.tga");
+  //texture.read_tga_file("african_head_spec.tga");
+  //texture.read_tga_file("diablo3_pose_diffuse.tga");  
   texture.flip_vertically();
   Point3DF lumiere(0,0,-1);
   lumiere.normalize();
   //Point3DF camera(0,0,3);
-  Point3DF eye(1,1,3);
+  Point3DF eye(3,1,3);
   Point3DF center(0,0,0);
   float intensit[3];
   float intensite(0);
@@ -318,6 +320,7 @@ int main() {//int argc, char** argv
   std::vector<Point3DF> vn;
   std::vector<Point3DI> f3;
   read("african_head.obj",coordonne,pnt,coordText,pointTexture , vn,f3); //v , f , vt ,f/ / , vn
+//  read("diablo3_pose.obj",coordonne,pnt,coordText,pointTexture , vn,f3); //v , f , vt ,f/ / , vn
   
   std::vector<int> p; //pour recuperer les 3 point à relier
   int size_pnt = pnt.size();
@@ -387,7 +390,9 @@ int main() {//int argc, char** argv
 
 
   image.flip_vertically(); 
-  image.write_tga_file("output.tga");
+  //image.write_tga_file("output.tga");
+  //image.write_tga_file("diablo.tga");
+  image.write_tga_file("african_.tga");
 
 
 
