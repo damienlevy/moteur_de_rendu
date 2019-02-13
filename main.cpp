@@ -45,6 +45,26 @@ std::string split_perso2(std::string mot){
   }
   return tmp;
 }
+std::string split_perso3(std::string mot){
+  std::string tmp="";
+  int i = 0;
+  while(mot[i] != '/'){
+    i++;
+    
+  }
+  i++;
+    while(mot[i] != '/'){
+    i++;
+    
+  }
+  i++;
+  while(mot[i]!='/'){
+    
+    tmp+=mot[i];
+    i++;
+  }
+  return tmp;
+}
 
 Point3DF matrixToPoint(Matrix m){
   return Point3DF(m[0][0]/m[3][0],m[1][0]/m[3][0],m[2][0]/m[3][0]);
@@ -98,14 +118,16 @@ void read(std::string name,
           std::vector< std::vector<int> > &pnt,
           std::vector<Point3DF> &coordTexture,
           std::vector<Point3DI> &pointTexture,
-          std::vector<Point3DF> &vn){
+          std::vector<Point3DF> &vn,
+          std::vector<Point3DI> &f3
+          ){
   //std::vector< std::vector<float> > coordonne;
   int compt = 0;
     std:: ifstream fichier(name.c_str());
     if(fichier){
     std:: string ligne;
     float tab[3];
-
+    float temp[3];
     //Tant qu'on n'est pas à la fin, on lit
     while(fichier >> ligne) { //permet de lire mot a mot
       while(ligne == "v"){
@@ -152,11 +174,13 @@ void read(std::string name,
          
           coord.push_back(atof(s.c_str())-1);  
           tab[i] = atof(split_perso2(ligne).c_str())-1;
+          temp[i] = atof(split_perso3(ligne).c_str())-1;
           
         }
         pointTexture.push_back(Point3DI(tab[0],tab[1],tab[2]));
-        
+        f3.push_back(Point3DI(temp[0],temp[1],temp[2]));
         pnt.push_back(coord);
+
         fichier >> ligne;
 
       }
@@ -228,8 +252,9 @@ Point3DF barycentre(Point3DF p1,Point3DF p2,Point3DF p3,Point3DF p){
 
 
 
-void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float intensite,Point3DF *pointText){
-
+void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float *intensit,float intensite,Point3DF *pointText){
+//  void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float intensite,Point3DF *pointText){
+  //float intensite(0);
   int max_X = std::max(p1.getX(),std::max(p2.getX(),p3.getX()));
   int max_Y = std::max(p1.getY(),std::max(p2.getY(),p3.getY()));
   int min_X = std::min(p1.getX(),std::min(p2.getX(),p3.getX()));
@@ -249,7 +274,8 @@ void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image
         zbuffer[int(x+y*width)] = z ;
         textX = pointText[0].getX()*bary.getX() + pointText[1].getX()*bary.getY() + pointText[2].getX()*bary.getZ();
         textY = pointText[0].getY()*bary.getX() + pointText[1].getY()*bary.getY() + pointText[2].getY()*bary.getZ();
-
+        intensite = -(intensit[0]*bary.getX() + intensit[1]*bary.getY() + intensit[2]*bary.getZ());
+        //std::cout<<intensite<<std::endl;
         TGAColor color = texture.get(textX * texture.get_width() , textY * texture.get_height());
         //TGAColor color(255*intensit[0],255*intensit[1],255*intensit[2]);
         image.set(x,y,color*intensite);
@@ -272,14 +298,17 @@ int main() {//int argc, char** argv
   texture.read_tga_file("african_head_diffuse.tga");
   texture.flip_vertically();
   Point3DF lumiere(0,0,-1);
-  Point3DF camera(0,0,3);
-  Point3DF eye(3,0,3);
+  lumiere.normalize();
+  //Point3DF camera(0,0,3);
+  Point3DF eye(1,1,3);
   Point3DF center(0,0,0);
-  //float intensit[3];
+  float intensit[3];
   float intensite(0);
   float *zbuffer = new float[width*height];
   Point3DF pointText[3];
+  Point3DF pointNorm[3];
   Point3DI temp;
+  Point3DI temp2;
   for (int i=width*height; i--; zbuffer[i] = -1);
   
   std::vector< std::vector<float> > coordonne;
@@ -287,7 +316,8 @@ int main() {//int argc, char** argv
   std::vector<Point3DF>coordText;
   std::vector<Point3DI> pointTexture;
   std::vector<Point3DF> vn;
-  read("african_head.obj",coordonne,pnt,coordText,pointTexture , vn); //v , f , vt ,f/ / , vn
+  std::vector<Point3DI> f3;
+  read("african_head.obj",coordonne,pnt,coordText,pointTexture , vn,f3); //v , f , vt ,f/ / , vn
   
   std::vector<int> p; //pour recuperer les 3 point à relier
   int size_pnt = pnt.size();
@@ -300,11 +330,12 @@ int main() {//int argc, char** argv
 
   Point3DF world_coords[3];
   Point3DF screen[3];
-  Point3DF norm;
+  //Point3DF norm;
   Point3DF n;
 //boucle de dessin des triangles
   for(int i = 0 ; i < size_pnt ; i++ ){
     temp = pointTexture[i];
+    temp2 = f3[i];
     //std::cout<< temp<< std::endl;
     pointText[0] = coordText[temp.getX()];
     pointText[1] = coordText[temp.getY()];
@@ -318,13 +349,17 @@ int main() {//int argc, char** argv
     p2 = coordonne[p[1]];
     p3 = coordonne[p[2]];
 
-    //norm = vn[];
-    //std::cout<<norm<<std::endl;
-    /*
-    intensit[0] = lumiere * norm.getX(); 
-    intensit[1] = lumiere * norm.getY();
-    intensit[2] = lumiere * norm.getZ();
-*/
+    pointNorm[0] = vn[temp2.getX()].normalize();
+    pointNorm[1] = vn[temp2.getY()].normalize();
+    pointNorm[2] = vn[temp2.getZ()].normalize();
+
+    //std::cout<< <<std::endl;
+  
+    
+    intensit[0] = lumiere * pointNorm[0]; 
+    intensit[1] = lumiere * pointNorm[1];
+    intensit[2] = lumiere * pointNorm[2];
+
     world_coords[0] = Point3DF(p1[0],p1[1],p1[2]);
     world_coords[1] = Point3DF(p2[0],p2[1],p2[2]);
     world_coords[2] = Point3DF(p3[0],p3[1],p3[2]);
@@ -336,16 +371,16 @@ int main() {//int argc, char** argv
     n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
     n.normalize();
     intensite = n*lumiere;
-
+//std::cout<<intensite<<std::endl;
     world_coords[0] = Point3DF((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2,p1[2]);
     world_coords[1] = Point3DF((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2,p2[2]);
     world_coords[2] = Point3DF((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2,p3[2]);
 
 
-    if(intensite>0){
-    
-      triangle(screen[0],screen[1],screen[2],zbuffer,image,texture,intensite,pointText);
-    }
+    //if(intensite>0){
+    //triangle(screen[0],screen[1],screen[2],zbuffer,image,texture,intensite,pointText);
+      triangle(screen[0],screen[1],screen[2],zbuffer,image,texture,intensit,intensite,pointText);
+    //}
     
    
   }

@@ -101,7 +101,7 @@ Point3D<T> operator*(Point3D<T> p ,float f) {
     Point3D<T> result(p.getX()*f , p.getY()*f , p.getZ()*f);
     return result;
 }
-template <typename T> T operator*(const Point3D<T> a,const Point3D<T> b){
+template <typename T,typename T2> T operator*(const Point3D<T> a,const Point3D<T2> b){
     return a.getX()*b.getX() + a.getY()*b.getY() + a.getZ()*b.getZ();
 }
 
