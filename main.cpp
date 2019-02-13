@@ -22,7 +22,6 @@ std::string split_perso(std::string mot){
   std::string tmp="";
   int i = 0;
   while(mot[i] != '/'){
-    
     tmp += mot[i];
     i++;
   }
@@ -32,14 +31,10 @@ std::string split_perso2(std::string mot){
   std::string tmp="";
   int i = 0;
   while(mot[i] != '/'){
-    
-    //tmp += mot[i];
     i++;
-    
   }
   i++;
   while(mot[i]!='/'){
-    
     tmp+=mot[i];
     i++;
   }
@@ -50,16 +45,13 @@ std::string split_perso3(std::string mot){
   int i = 0;
   while(mot[i] != '/'){
     i++;
-    
   }
   i++;
-    while(mot[i] != '/'){
-    i++;
-    
+  while(mot[i] != '/'){
+    i++;  
   }
   i++;
-  while(mot[i]!='/'){
-    
+  while(mot[i]!='/'){ 
     tmp+=mot[i];
     i++;
   }
@@ -96,21 +88,20 @@ Matrix lookat(Point3DF eye, Point3DF center, Point3DF up) {
     Point3DF y = (z^x).normalize();
     Matrix Minv = Matrix::identity(4);
     Matrix Tr   = Matrix::identity(4);
-    //for (int i=0; i<3; i++) {
-        Minv[0][0] = x.getX();
-        Minv[0][1] = x.getY();
-        Minv[0][2] = x.getZ();
-        Minv[1][0] = y.getX();
-        Minv[1][1] = y.getY();
-        Minv[1][2] = y.getZ();
-        Minv[2][0] = z.getX();
-        Minv[2][1] = z.getY();
-        Minv[2][2] = z.getZ();
-        Tr[0][3] = -center.getX();
-        Tr[1][3] = -center.getY();
-        Tr[2][3] = -center.getZ();
-    //}
-    return Matrix(Minv*Tr);
+
+    Minv[0][0] = x.getX();
+    Minv[0][1] = x.getY();
+    Minv[0][2] = x.getZ();
+    Minv[1][0] = y.getX();
+    Minv[1][1] = y.getY();
+    Minv[1][2] = y.getZ();
+    Minv[2][0] = z.getX();
+    Minv[2][1] = z.getY();
+    Minv[2][2] = z.getZ();
+    Tr[0][3] = -center.getX();
+    Tr[1][3] = -center.getY();
+    Tr[2][3] = -center.getZ();
+  return Matrix(Minv*Tr);
 }
 
 void read(std::string name, 
@@ -121,7 +112,6 @@ void read(std::string name,
           std::vector<Point3DF> &vn,
           std::vector<Point3DI> &f3
           ){
-  //std::vector< std::vector<float> > coordonne;
   int compt = 0;
     std:: ifstream fichier(name.c_str());
     if(fichier){
@@ -131,37 +121,29 @@ void read(std::string name,
     //Tant qu'on n'est pas à la fin, on lit
     while(fichier >> ligne) { //permet de lire mot a mot
       while(ligne == "v"){
-          std::vector<float> point;
-          
+          std::vector<float> point;     
           fichier >> ligne;
           point.push_back( atof(ligne.c_str()));
-          //	std::cout << ligne <<std::endl;
           fichier >> ligne;
           point.push_back( atof(ligne.c_str()));
-          //	std::cout << ligne <<std::endl;
           fichier >> ligne;
           point.push_back( atof(ligne.c_str()));
           fichier >> ligne;
           coordonne.push_back(point);
       }
       while(ligne == "vt"){
-        //compt++;
-        
         for(int i = 0 ; i<3;i++){
           fichier >> ligne;
           tab[i] = atof(ligne.c_str());
-          //std::cout << tab[i] <<std::endl;
         }
         coordTexture.push_back(Point3DF(tab[0],tab[1],tab[2]));
         fichier >> ligne;
       }
       while(ligne == "vn"){
         compt++;
-        
         for(int i = 0 ; i<3;i++){
           fichier >> ligne;
           tab[i] = atof(ligne.c_str());
-          //std::cout << tab[i] <<std::endl;
         }
         vn.push_back(Point3DF(tab[0],tab[1],tab[2]));
         fichier >> ligne;
@@ -253,8 +235,6 @@ Point3DF barycentre(Point3DF p1,Point3DF p2,Point3DF p3,Point3DF p){
 
 
 void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float *intensit,float intensite,Point3DF *pointText){
-//  void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image, TGAImage &texture,float intensite,Point3DF *pointText){
-  //float intensite(0);
   int max_X = std::max(p1.getX(),std::max(p2.getX(),p3.getX()));
   int max_Y = std::max(p1.getY(),std::max(p2.getY(),p3.getY()));
   int min_X = std::min(p1.getX(),std::min(p2.getX(),p3.getX()));
@@ -275,14 +255,8 @@ void triangle(Point3DF p1,Point3DF p2,Point3DF p3,float *zbuffer,TGAImage &image
         textX = pointText[0].getX()*bary.getX() + pointText[1].getX()*bary.getY() + pointText[2].getX()*bary.getZ();
         textY = pointText[0].getY()*bary.getX() + pointText[1].getY()*bary.getY() + pointText[2].getY()*bary.getZ();
         intensite = -(intensit[0]*bary.getX() + intensit[1]*bary.getY() + intensit[2]*bary.getZ());
-        //std::cout<<intensite<<std::endl;
         TGAColor color = texture.get(textX * texture.get_width() , textY * texture.get_height());
-        //TGAColor color(255*intensit[0],255*intensit[1],255*intensit[2]);
         image.set(x,y,color*intensite);
-        //image.set(x,y,white*intensite);
-//image.set(x,y,color);
-        
-
       }
     }
   }
@@ -301,7 +275,6 @@ int main() {//int argc, char** argv
   texture.flip_vertically();
   Point3DF lumiere(0,0,-1);
   lumiere.normalize();
-  //Point3DF camera(0,0,3);
   Point3DF eye(3,1,3);
   Point3DF center(0,0,0);
   float intensit[3];
@@ -328,18 +301,16 @@ int main() {//int argc, char** argv
   Matrix vue = lookat(eye,center,Point3DF(0,1,0));
   Matrix Projection = Matrix::identity(4);
   Matrix ViewPort   = viewport(width/8, height/8, width*3/4, height*3/4);
-  Projection[3][2] = -1.f/(eye-center).norm();//camera.getZ();
+  Projection[3][2] = -1.f/(eye-center).norm();
   Matrix z = (ViewPort*Projection*vue);
 
   Point3DF world_coords[3];
   Point3DF screen[3];
-  //Point3DF norm;
   Point3DF n;
 //boucle de dessin des triangles
   for(int i = 0 ; i < size_pnt ; i++ ){
     temp = pointTexture[i];
     temp2 = f3[i];
-    //std::cout<< temp<< std::endl;
     pointText[0] = coordText[temp.getX()];
     pointText[1] = coordText[temp.getY()];
     pointText[2] = coordText[temp.getZ()];
@@ -355,9 +326,6 @@ int main() {//int argc, char** argv
     pointNorm[0] = vn[temp2.getX()].normalize();
     pointNorm[1] = vn[temp2.getY()].normalize();
     pointNorm[2] = vn[temp2.getZ()].normalize();
-
-    //std::cout<< <<std::endl;
-  
     
     intensit[0] = lumiere * pointNorm[0]; 
     intensit[1] = lumiere * pointNorm[1];
@@ -367,25 +335,15 @@ int main() {//int argc, char** argv
     world_coords[1] = Point3DF(p2[0],p2[1],p2[2]);
     world_coords[2] = Point3DF(p3[0],p3[1],p3[2]);
     for(int j = 0 ; j < 3 ; j++){
-      screen[j] = matrixToPoint(ViewPort * Projection * vue * pointToMatrix(world_coords[j]));
-      //screen[j] = matrixToPoint(ViewPort * Projection * pointToMatrix(intensit[j]));  
+      screen[j] = matrixToPoint(ViewPort * Projection * vue * pointToMatrix(world_coords[j]));  
     }
 
-    n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
-    n.normalize();
-    intensite = n*lumiere;
-//std::cout<<intensite<<std::endl;
     world_coords[0] = Point3DF((p1[0]+ 1) * width/2,(p1[1]+ 1) * height/2,p1[2]);
     world_coords[1] = Point3DF((p2[0]+ 1) * width/2,(p2[1]+ 1) * height/2,p2[2]);
     world_coords[2] = Point3DF((p3[0]+ 1) * width/2,(p3[1]+ 1) * height/2,p3[2]);
 
+    triangle(screen[0],screen[1],screen[2],zbuffer,image,texture,intensit,intensite,pointText);
 
-    //if(intensite>0){
-    //triangle(screen[0],screen[1],screen[2],zbuffer,image,texture,intensite,pointText);
-      triangle(screen[0],screen[1],screen[2],zbuffer,image,texture,intensit,intensite,pointText);
-    //}
-    
-   
   }
 
 
